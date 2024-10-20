@@ -3,13 +3,9 @@ const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 
 const getAllJobs = async (req, res) => {
-  // {  status: 'interview',
-  //   jobType: 'full-time',
-  //   sort: 'oldest',
-  //   page: '1',
-  //   search: 'help deski'}
   const { status, jobType, sort, search } = req.query;
 
+  //1) searching by features
   const queryObject = {
     createdBy: req.user.userId,
   };
@@ -26,19 +22,36 @@ const getAllJobs = async (req, res) => {
     queryObject.jobType = jobType;
   }
 
-  if (sort && sort === "latest") {
+  let result = Job.find(queryObject);
+
+  //2) searching by creation-time
+  if (sort === "latest") {
+    result.sort("-createdAt");
   }
-  if (sort && sort === "oldest") {
-  }
-  if (sort && sort === "a-z") {
-  }
-  if (sort && sort === "z-a") {
+  if (sort === "oldest") {
+    result.sort("createdAt");
   }
 
-  const result = Job.find(queryObject);
+  //3) searching by alphabets
+  if (sort === "a-z") {
+    result.sort("position");
+  }
+  if (sort === "z-a") {
+    result.sort("-position");
+  }
+
+  //4) searching by pagination
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  result.skip(skip).limit(limit);
   const jobs = await result;
 
-  res.status(StatusCodes.OK).json({ jobs });
+  const totalJobs = await Job.countDocuments(queryObject);
+  const numOfPages = Math.ceil(totalJobs / limit);
+
+  res.status(StatusCodes.OK).json({ jobs, totalJobs, numOfPages });
 };
 const getJob = async (req, res) => {
   const {

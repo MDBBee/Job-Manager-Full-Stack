@@ -10,6 +10,8 @@ const app = express();
 
 const connectDB = require("./db/connect");
 const authenticateUser = require("./middleware/authentication");
+// const demoUser = require("./middleware/demoUser");
+
 // routers
 const authRouter = require("./routes/auth");
 const jobsRouter = require("./routes/jobs");
