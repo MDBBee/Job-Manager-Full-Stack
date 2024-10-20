@@ -8,6 +8,8 @@ const xss = require("xss-clean");
 const express = require("express");
 const app = express();
 
+app.set("trust proxy", 1);
+
 const connectDB = require("./db/connect");
 const authenticateUser = require("./middleware/authentication");
 // const demoUser = require("./middleware/demoUser");
